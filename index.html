@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Game of War</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1.0"
+    />
+  </head>
+  <body>
+    <div>
+      <button id="start" onclick="startGame()">Start Game</button>
+      <button id="draw" onclick="drawNextCards()">Draw Cards</button>
+      <br /><br />
+      <div class="round_number"></div>
+      <div class="winner"></div>
+      <hr />
+    </div>
+
+    <div id="player_a">
+      <h2>Player A</h2>
+      <span class="points_a"></span>
+      <div class="card_image_a"></div>
+      <br />
+    </div>
+    <span style="padding: 40px"></span>
+    <div id="player_b"></div>
+    <h2>Player B</h2>
+    <span class="points_b"></span>
+    <div class="card_image_b"></div>
+      <br />
+      <br />
+    </div>
+    <div class="round_winner"></div>
+    <div class="game_winner" style="display: none"></div>
+  </body>
+  <script>
+    // A container for the game and associated state
+    let Game = {};
+
+    // Game.state exists only to indicate the game has started.
+    Game.state = false;
+
+    // Using a max_round varible to avoid hitting the API too frequently
+    // for the cards.remaining parameter
+    Game.max_round = 52;
+
+    // The current round is 0 since the game has not started at this point. 
+    Game.round = 0;
+
+    // A simple function to memoize player information. This was previously
+    // a class that interacted with the API, but involved a large amount of abstraction. 
+    function player() {
+      return {
+        points: 0,
+        deck: undefined,
+      };
+    }
+
+    async function startGame() {
+      // The line below was replaced with a check against the max_round variable
+      // if (Game.state) return
+
+      // Initialize the game at round 1
+      Game.round = 1;
+
+      // Update the round number on the page
+      document.querySelector(
+        ".round_number"
+      ).innerHTML = `round ${Game.round}`;
+
+      async function getNewDeck() {
+        return await fetch(
+          "https://deckofcardsapi.com/api/deck/new/draw/"
+        ).then((resp) => resp.json());
+      }
+
+      const a = player();
+      const b = player();
+
+      a.deck = await getNewDeck();
+      b.deck = await getNewDeck();
+
+      document.querySelector(
+        ".card_image_a"
+      ).innerHTML = `<img src=${a.deck.cards[0].image}></img>`;
+      document.querySelector(
+        ".card_image_b"
+      ).innerHTML = `<img src=${b.deck.cards[0].image}></img>`;
+
+      Game.players = { a, b };
+
+      playRound(a.deck.cards[0].value, b.deck.cards[0].value);
+
+      Game.state = true;
+    }
+
+    function playRound(a_val, b_val) {
+      if (Game.round > 52) {
+        return
+      }
+
+      document.querySelector(
+        ".round_number"
+      ).innerHTML = `round ${Game.round}`;
+
+      const faceCards = ["JACK", "QUEEN", "KING", "ACE"];
+
+      let values = [a_val, b_val];
+      values.forEach((item) => {
+        if (faceCards.includes(item)) return faceCards.indexOf(item) + 11;
+        return Number(item);
+      });
+
+      let winner = undefined;
+
+      if (a_val > b_val) {
+        winner = "A";
+        Game.players.a.points++;
+      } else if (b_val > a_val) {
+        winner = "B";
+        Game.players.b.points++;
+      } else if (a_val === b_val) {
+        winner = "TIE";
+      }
+
+      document.querySelector(
+        ".winner"
+      ).innerHTML = `<h2>WINNER: PLAYER ${winner}</h2>`;
+
+      // if (Game.state) return
+
+      document.querySelector(
+        ".points_a"
+      ).innerHTML = `points: ${Game.players.a.points}`;
+      document.querySelector(
+        ".points_b"
+      ).innerHTML = `points: ${Game.players.b.points}`;
+
+      Game.round++;
+    }
+
+    async function drawNextCards() {
+      if (Game.round > 52) {
+        const gameWinner = (Game.players.a.points > Game.players.b.points) ? "Player A" : "Player B";
+        document.querySelector(".winner").innerHTML = `<h2>GAME OVER. WINNER: ${gameWinner}</h2>`;
+        return
+      }
+
+      const a_id = Game.players.a.deck.deck_id;
+      const b_id = Game.players.b.deck.deck_id;
+
+      const a_val = await fetch(
+        `https://deckofcardsapi.com/api/deck/${a_id}/draw/`
+      ).then((resp) => resp.json());
+      const b_val = await fetch(
+        `https://deckofcardsapi.com/api/deck/${b_id}/draw/`
+      ).then((resp) => resp.json());
+
+      document.querySelector(
+        ".card_image_a"
+      ).innerHTML = `<img src=${a_val.cards[0].image}></img>`;
+      document.querySelector(
+        ".card_image_b"
+      ).innerHTML = `<img src=${b_val.cards[0].image}></img>`;
+
+      playRound(a_val.cards[0].value, b_val.cards[0].value);
+    }
+  </script>
+</html>

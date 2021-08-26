@@ -59,3 +59,10 @@ You may use a framework or library (Flask, Django, Rails, React, jQuery, etc.) b
 ### Evaluation
 
 - In addition to correctness, we want to see (a) clean, readable, well-documented code that’s idiomatic to your language and (b) good commit messages.
+
+
+## Plan
+
+- Start game via "Start Game" button
+- When game is started, fetch a new deck for each player
+- 
