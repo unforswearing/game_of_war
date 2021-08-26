@@ -143,7 +143,13 @@
 
     async function drawNextCards() {
       if (Game.round > 52) {
-        const gameWinner = (Game.players.a.points > Game.players.b.points) ? "Player A" : "Player B";
+        let gameWinner = undefined
+        if (Game.players.a.points === Game.players.b.points) {
+          gameWinner = "TIE"
+        } else {
+          gameWinner = (Game.players.a.points > Game.players.b.points) ? "Player A" : "Player B";
+        }
+        
         document.querySelector(".winner").innerHTML = `<h2>GAME OVER. WINNER: ${gameWinner}</h2>`;
         return
       }
