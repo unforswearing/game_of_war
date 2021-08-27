@@ -32,8 +32,6 @@
       <br />
       <br />
     </div>
-    <div class="round_winner"></div>
-    <div class="game_winner" style="display: none"></div>
   </body>
   <script>
     // A container for the game and associated state
@@ -58,6 +56,7 @@
       };
     }
 
+    // "User presses a “Start Game” button to start the game"
     async function startGame() {
       // The line below was replaced with a check against the max_round variable
       // if (Game.state) return
@@ -70,6 +69,9 @@
         ".round_number"
       ).innerHTML = `round ${Game.round}`;
 
+  
+      document.getElementById("draw").innerHTML = "Draw Cards";
+
       async function getNewDeck() {
         return await fetch(
           "https://deckofcardsapi.com/api/deck/new/draw/"
@@ -79,9 +81,13 @@
       const a = player();
       const b = player();
 
+      // "Your program requests a new deck of cards from the API (player A)"
       a.deck = await getNewDeck();
+
+      // "Your program requests a second new deck of cards from the API (player B)"
       b.deck = await getNewDeck();
 
+      // "Your program draws one card from each deck and displays the cards on screen"
       document.querySelector(
         ".card_image_a"
       ).innerHTML = `<img src=${a.deck.cards[0].image}></img>`;
@@ -94,43 +100,47 @@
       playRound(a.deck.cards[0].value, b.deck.cards[0].value);
 
       Game.state = true;
+      Game.round = 51
     }
 
     function playRound(a_val, b_val) {
-      if (Game.round > 52) {
-        return
-      }
-
       document.querySelector(
         ".round_number"
       ).innerHTML = `round ${Game.round}`;
 
       const faceCards = ["JACK", "QUEEN", "KING", "ACE"];
+      
+      if (faceCards.includes(a_val)) a_val = faceCards.indexOf(a_val) + 11;
+      if (faceCards.includes(b_val)) b_val = faceCards.indexOf(b_val) + 11;
 
-      let values = [a_val, b_val];
-      values.forEach((item) => {
-        if (faceCards.includes(item)) return faceCards.indexOf(item) + 11;
-        return Number(item);
-      });
+      a_val = parseInt(a_val)
+      b_val = parseInt(b_val)
 
+      // "Whichever player has the higher card gets a point (Aces are high)"
       let winner = undefined;
 
       if (a_val > b_val) {
-        winner = "A";
+        winner = "Player A";
         Game.players.a.points++;
-      } else if (b_val > a_val) {
-        winner = "B";
+      }
+      
+      if (b_val > a_val) {
+        winner = "Player B";
         Game.players.b.points++;
-      } else if (a_val === b_val) {
+      } 
+      
+      if (a_val === b_val) {
         winner = "TIE";
       }
 
+      // "Display which player won" (for each round)
       document.querySelector(
         ".winner"
-      ).innerHTML = `<h2>WINNER: PLAYER ${winner}</h2>`;
+      ).innerHTML = `<h2>WINNER: ${winner}</h2>`;
 
       // if (Game.state) return
 
+      // "The point total for each player is displayed"
       document.querySelector(
         ".points_a"
       ).innerHTML = `points: ${Game.players.a.points}`;
@@ -138,25 +148,39 @@
         ".points_b"
       ).innerHTML = `points: ${Game.players.b.points}`;
 
+      // Setting these to undefined in order to debug an issue with scoring
+      a_val, b_val = undefined;
+
+      // Increment the game to the next round
       Game.round++;
     }
 
+    // "User presses a “Draw Cards” button to continue the game"
     async function drawNextCards() {
-      if (Game.round > 52) {
+      if (Game.round === 52) document.getElementById("draw").innerHTML = "Tally Score";
+      if (Game.round === 53) {
         let gameWinner = undefined
-        if (Game.players.a.points === Game.players.b.points) {
-          gameWinner = "TIE"
-        } else {
-          gameWinner = (Game.players.a.points > Game.players.b.points) ? "Player A" : "Player B";
-        }
-        
+
+        // These if blocks were broken into seperate lines to debug an issue with scoring. 
+        if (Game.players.a.points > Game.players.b.points) gameWinner = "Player A";
+        if (Game.players.a.points < Game.players.b.points) gameWinner = "Player B";
+        if (Game.players.a.points === Game.players.b.points) gameWinner = "TIE";
+
+        // "Display which player won"        
         document.querySelector(".winner").innerHTML = `<h2>GAME OVER. WINNER: ${gameWinner}</h2>`;
+        document.getElementById("start").innerHTML = "New Game";
+
+        // Make the game inactive (symbolically)
+        Game.state = false;
+
         return
       }
 
+      // Retrieve the id from each players deck of cards
       const a_id = Game.players.a.deck.deck_id;
       const b_id = Game.players.b.deck.deck_id;
 
+      // Use the ids above to fetch a new card from deck "deck_id"
       const a_val = await fetch(
         `https://deckofcardsapi.com/api/deck/${a_id}/draw/`
       ).then((resp) => resp.json());
@@ -164,6 +188,7 @@
         `https://deckofcardsapi.com/api/deck/${b_id}/draw/`
       ).then((resp) => resp.json());
 
+      // Update the card images to show the current values
       document.querySelector(
         ".card_image_a"
       ).innerHTML = `<img src=${a_val.cards[0].image}></img>`;
@@ -171,6 +196,7 @@
         ".card_image_b"
       ).innerHTML = `<img src=${b_val.cards[0].image}></img>`;
 
+      // Exec the "playRound" function to compare the two new cards
       playRound(a_val.cards[0].value, b_val.cards[0].value);
     }
   </script>
