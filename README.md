@@ -1,14 +1,3 @@
-## Writing sample
-As we are a distributed team, we rely on clear written communication. Please send an example of something you’ve written on a technical topic. We don’t need you to write anything new and we are not looking for published writing.
-
-Examples include:
-  - A bug report (on GitHub, Jira, etc.)
-  - A question on Stack Overflow or a message board
-  - An email to a mailing list or colleague
-  - A homework assignment
-
-If you can’t find anything suitable, then you can write something new. Keep it short — about 300 words.
-
 ## Coding sample
 
 Implement one round of the card game War using the API found at deckofcardsapi.com. Your game. should work like this:
@@ -37,17 +26,17 @@ You may use a framework or library (Flask, Django, Rails, React, jQuery, etc.) b
   - Display
     - Show cards on screen when they are drawn
     - Show point totals for both players, updated after each round
-    - Show the winner 
+    - Show the winner
 
 
 ### Time limit
 
-- Don’t spend more than two hours on this. If you get it done in less time, that’s fine, too. If you don’t finish in two hours, send what you have. 
+- Don’t spend more than two hours on this. If you get it done in less time, that’s fine, too. If you don’t finish in two hours, send what you have.
 
 
 ### Scope
 
-  - Do not spend time making it fancy (i.e. no animations or special effects). 
+  - Do not spend time making it fancy (i.e. no animations or special effects).
   - Do not write any unit, integration, acceptance or other types of tests.
 
 
@@ -65,4 +54,4 @@ You may use a framework or library (Flask, Django, Rails, React, jQuery, etc.) b
 
 - Start game via "Start Game" button
 - When game is started, fetch a new deck for each player
-- 
+-
